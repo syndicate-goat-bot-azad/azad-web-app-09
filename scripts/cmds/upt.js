@@ -9,12 +9,12 @@ const { createCanvas, loadImage } = require("canvas");
 module.exports = {
   config: {
     name: "uptime",
-    version: "2.0",
+    version: "2.1",
     author: "Raihan Fiba | Modified by Azad",
     countDown: 5,
     role: 0,
-    shortDescription: "Cute uptime with red glowing circles",
-    longDescription: "Show uptime, CPU, RAM with glowing red visuals at bottom",
+    shortDescription: "Cute uptime with red glowing circles & text",
+    longDescription: "Show uptime, CPU, RAM with glowing red visuals at bottom and glowing text",
     category: "system",
     guide: { en: "uptime" }
   },
@@ -41,7 +41,7 @@ module.exports = {
       const usedMem = totalMem - freeMem;
       const cpuLoad = os.loadavg()[0];
 
-      // 🖼 Background Image (Your custom one)
+      // 🖼 Background Image
       const bg = await loadImage("https://i.imgur.com/ySMvIub.jpeg");
 
       const canvas = createCanvas(800, 500);
@@ -66,15 +66,18 @@ module.exports = {
         console.error("⚠ Group avatar not loaded, skipping.");
       }
 
-      // 📝 Info Text
+      // 📝 Info Text with Glow
       ctx.font = "22px Arial";
       ctx.fillStyle = "#ff4444";
+      ctx.shadowColor = "#ff0000";   // 🔴 Glow color
+      ctx.shadowBlur = 15;           // 🌟 Glow intensity
       let y = 200, lh = 36;
       ctx.fillText(`👥 Group: ${gcName}`, 40, y); y += lh;
       ctx.fillText(`🤖 Bot: ${botName}`, 40, y); y += lh;
       ctx.fillText(`👤 User: ${senderName}`, 40, y); y += lh;
       ctx.fillText(`🕓 Time: ${timeNow.format("hh:mm A")} (${session})`, 40, y); y += lh;
       ctx.fillText(`📅 Date: ${timeNow.format("DD MMM YYYY")}`, 40, y); y += lh;
+      ctx.shadowBlur = 0; // reset shadow
 
       // 🔴 Glowing Circles (Uptime, CPU, RAM)
       const baseY = 400;
@@ -133,11 +136,15 @@ function drawGlowingCircle(ctx, x, y, radius, percent, label, value) {
 
   ctx.restore();
 
-  // Text
+  // 🔤 Text with glow
+  ctx.save();
   ctx.font = "15px Arial";
   ctx.fillStyle = "#ff4444";
   ctx.textAlign = "center";
+  ctx.shadowColor = "#ff0000";
+  ctx.shadowBlur = 15;
   ctx.fillText(label, x, y - 10);
   ctx.font = "bold 18px Arial";
   ctx.fillText(value, x, y + 20);
-                              }
+  ctx.restore();
+                                  }
