@@ -1,82 +1,65 @@
 /**
- * Optimized Bootstrap for Goat Bot V2 (Render-friendly)
- * Author: Az ad
+ * @author NTKhang
+ * ! The source code is written by NTKhang, please don't change the author's name everywhere.
+ * ! Official source code: https://github.com/ntkhang03/Goat-Bot-V2
+ *
+ * Modified by Azad (Added keep-alive system for 24/7 uptime)
  */
 
-const path = require("path");
-const fs = require("fs-extra");
-const http = require("http");
+const { spawn } = require("child_process");
+const log = require("./logger/log.js");
 const express = require("express");
+const axios = require("axios");
 
-// Minimal web server for health checks/keep-alive
 const app = express();
-app.get("/", (_req, res) => res.send("Goat Bot V2 is running (optimized)."));
 const PORT = process.env.PORT || 3000;
-const server = http.createServer(app);
-server.listen(PORT, () => console.log("[WEB] Listening on", PORT));
 
-// --- Core Client Skeleton (replace with your actual Goat Bot client init) ---
-const client = { commands: new Map(), events: new Map(), config: {} };
+// ----------- Fake Web Server -----------
+app.get("/", (req, res) => {
+  res.send("✅ Goat Bot is running 24/7!");
+});
 
-// Load config fast (sync read; tiny file)
-const localConfigPath = path.join(__dirname, "config.json");
-if (fs.existsSync(localConfigPath)) {
+// (Optional) Show logs from memory
+let logs = [];
+app.get("/logs", (req, res) => {
+  res.json(logs.slice(-50)); // শেষ ৫০টা লগ দেখাবে
+});
+
+app.listen(PORT, () => {
+  console.log(`🌐 Web server listening on port ${PORT}`);
+});
+// ---------------------------------------
+
+// ----------- Self-Ping (Keep Alive) -----------
+const url = `http://localhost:${PORT}`;
+setInterval(async () => {
   try {
-    client.config = JSON.parse(fs.readFileSync(localConfigPath));
-  } catch (e) {
-    console.warn("[CONFIG] Failed to parse config.json:", e.message);
+    await axios.get(url);
+    console.log("🔄 Self-ping to keep bot alive...");
+  } catch (err) {
+    console.error("⚠️ Self-ping failed:", err.message);
   }
+}, 5 * 60 * 1000); // প্রতি 5 মিনিটে নিজেকে পিং করবে
+// -----------------------------------------------
+
+function startProject() {
+  const child = spawn("node", ["Goat.js"], {
+    cwd: __dirname,
+    stdio: "inherit",
+    shell: true
+  });
+
+  child.on("close", (code) => {
+    logs.push(`[${new Date().toISOString()}] Bot exited with code ${code}`);
+    if (code == 2) {
+      log.info("Restarting Project...");
+      startProject();
+    }
+  });
+
+  child.on("error", (err) => {
+    logs.push(`[${new Date().toISOString()}] Error: ${err.message}`);
+  });
 }
 
-// Lazy command loader
-const loadCommands = require("./loader");
-loadCommands(client);
-
-// Deferred init for heavy or external steps
-(async () => {
-  console.time("bootstrap");
-
-  // 1) Load remote base API URL with cache (non-blocking for HTTP server)
-  const { getBaseApiUrl } = require("./utils/cacheBaseUrl");
-  try {
-    client.config.baseApiUrl = await getBaseApiUrl();
-    console.log("[API] baseApiUrl:", client.config.baseApiUrl);
-  } catch (e) {
-    console.warn("[API] baseApiUrl failed:", e.message);
-  }
-
-  // 2) Initialize core subsystems (simulate Goat Bot internals)
-  // NOTE: Replace with the real init of your framework (login, sockets, etc.)
-  try {
-    const { initCore } = require("./utils/initCore");
-    await initCore(client);
-    console.log("[CORE] Initialized.");
-  } catch (e) {
-    console.error("[CORE] Init failed:", e);
-  }
-
-  console.timeEnd("bootstrap");
-})();
-
-// Example message dispatcher (pseudo; connect to your real message events)
-async function onMessage(message) {
-  try {
-    const prefix = client.config.prefix || "/";
-    if (!message.text?.startsWith(prefix)) return;
-    const [cmdName, ...args] = message.text.slice(prefix.length).trim().split(/\s+/);
-
-    const loader = client.commands.get(cmdName);
-    if (!loader) return; // unknown command
-
-    // Require on first use (lazy)
-    const command = loader();
-    if (typeof command.run !== "function") return;
-
-    await command.run({ client, message, args });
-  } catch (e) {
-    console.error("[DISPATCH] Error:", e);
-  }
-}
-
-// Export dispatcher for your adapter to call
-module.exports = { client, onMessage };
+startProject();
