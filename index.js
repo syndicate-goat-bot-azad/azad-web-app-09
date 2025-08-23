@@ -18,8 +18,8 @@ let logs = [];
 function addLog(msg) {
   const timestamp = `[${new Date().toISOString()}]`;
   logs.push(`${timestamp} ${msg}`);
-  if (logs.length > 50) logs.shift(); // keep maximum 50 logs
-  console.log(msg); // you can reduce console logs if needed
+  if (logs.length > 50) logs.shift(); // keep max 50 logs
+  console.log(msg);
 }
 
 // ---------------------
@@ -41,72 +41,34 @@ setInterval(async () => {
   } catch (err) {
     addLog(`⚠️ Self-ping failed: ${err.message}`);
   }
-}, 1 * 60 * 1000); // ping every 1 minute
+}, 60 * 1000); // ping every 1 minute
 
 // ---------------------
-// Goat.js Internal Error-Proof Wrapper
+// Goat Bot Main Code
 // ---------------------
-function wrapAsync(fn) {
-  return async function(...args) {
-    try {
-      await fn(...args);
-    } catch (err) {
-      addLog(`❌ Goat.js internal error: ${err.message}`);
-    }
-  };
-}
-
-// ---------------------
-// Example Goat Bot Main Function
-// ---------------------
-async function GoatBotMain() {
-  // place your main Goat Bot code here
+async function startGoatBot() {
   try {
-    await exampleTask();
-    await anotherTask();
+    addLog("🚀 Starting Goat Bot...");
+
+    // ===============================
+    // 👉 Put your Goat.js code here 👇
+    // ===============================
+
+    console.log("🐐 Goat Bot core code is running...");
+
+    // Example async loop (replace with your bot logic)
+    setInterval(() => {
+      console.log("💡 Goat Bot is still alive...");
+    }, 10000);
+
+    // ===============================
+    // 👉 End of Goat.js code
+    // ===============================
+
   } catch (err) {
-    addLog(`⚠️ GoatBotMain error: ${err.message}`);
+    addLog(`❌ Error in Goat Bot: ${err.message}`);
+    setTimeout(startGoatBot, 5000); // restart after 5s
   }
-}
-
-// Example async functions
-async function exampleTask() {
-  try {
-    console.log("✅ Example task running");
-  } catch (err) {
-    addLog(`⚠️ exampleTask error: ${err.message}`);
-  }
-}
-
-async function anotherTask() {
-  try {
-    console.log("✅ Another task running fine");
-  } catch (err) {
-    addLog(`⚠️ anotherTask error: ${err.message}`);
-  }
-}
-
-// Wrap GoatBotMain
-const safeGoatBot = wrapAsync(GoatBotMain);
-
-// ---------------------
-// Auto-Restart System
-// ---------------------
-function startBot() {
-  const child = spawn("node", ["-e", `"(${safeGoatBot.toString()})()"`], {
-    cwd: __dirname,
-    stdio: "inherit",
-    shell: true,
-  });
-
-  child.on("close", (code) => {
-    addLog(`⚠️ Goat Bot exited with code ${code}. Restarting in 5 seconds...`);
-    setTimeout(startBot, 5000);
-  });
-
-  child.on("error", (err) => {
-    addLog(`❌ Goat.js spawn error: ${err.message}`);
-  });
 }
 
 // ---------------------
@@ -118,4 +80,4 @@ process.on("unhandledRejection", (reason) => addLog(`💥 Unhandled Rejection: $
 // ---------------------
 // Start Bot
 // ---------------------
-startBot();
+startGoatBot();
