@@ -1,65 +1,121 @@
 /**
- * @author NTKhang
- * ! The source code is written by NTKhang, please don't change the author's name everywhere.
- * ! Official source code: https://github.com/ntkhang03/Goat-Bot-V2
- *
- * Modified by Azad (Added keep-alive system for 24/7 uptime)
+ * Goat Bot Single File Version
+ * Author: NTKhang
+ * Modified by: Azad (24/7 + Auto-restart + Error-proof + Render Optimized)
  */
 
 const { spawn } = require("child_process");
-const log = require("./logger/log.js");
 const express = require("express");
 const axios = require("axios");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ----------- Fake Web Server -----------
-app.get("/", (req, res) => {
-  res.send("✅ Goat Bot is running 24/7!");
-});
-
-// (Optional) Show logs from memory
+// ---------------------
+// Logging System
+// ---------------------
 let logs = [];
-app.get("/logs", (req, res) => {
-  res.json(logs.slice(-50)); // শেষ ৫০টা লগ দেখাবে
-});
+function addLog(msg) {
+  const timestamp = `[${new Date().toISOString()}]`;
+  logs.push(`${timestamp} ${msg}`);
+  if (logs.length > 50) logs.shift(); // keep maximum 50 logs
+  console.log(msg); // you can reduce console logs if needed
+}
 
-app.listen(PORT, () => {
-  console.log(`🌐 Web server listening on port ${PORT}`);
-});
-// ---------------------------------------
+// ---------------------
+// Web Server (Keep-Alive)
+// ---------------------
+app.get("/", (req, res) => res.send("✅ Goat Bot is running 24/7!"));
+app.get("/logs", (req, res) => res.json(logs));
 
-// ----------- Self-Ping (Keep Alive) -----------
+app.listen(PORT, () => addLog(`🌐 Web server started on PORT: ${PORT}`));
+
+// ---------------------
+// Self-Ping (Render optimized)
+// ---------------------
 const url = `http://localhost:${PORT}`;
 setInterval(async () => {
   try {
     await axios.get(url);
-    console.log("🔄 Self-ping to keep bot alive...");
+    addLog("🔄 Self-ping successful");
   } catch (err) {
-    console.error("⚠️ Self-ping failed:", err.message);
+    addLog(`⚠️ Self-ping failed: ${err.message}`);
   }
-}, 5 * 60 * 1000); // প্রতি 5 মিনিটে নিজেকে পিং করবে
-// -----------------------------------------------
+}, 1 * 60 * 1000); // ping every 1 minute
 
-function startProject() {
-  const child = spawn("node", ["Goat.js"], {
+// ---------------------
+// Goat.js Internal Error-Proof Wrapper
+// ---------------------
+function wrapAsync(fn) {
+  return async function(...args) {
+    try {
+      await fn(...args);
+    } catch (err) {
+      addLog(`❌ Goat.js internal error: ${err.message}`);
+    }
+  };
+}
+
+// ---------------------
+// Example Goat Bot Main Function
+// ---------------------
+async function GoatBotMain() {
+  // place your main Goat Bot code here
+  try {
+    await exampleTask();
+    await anotherTask();
+  } catch (err) {
+    addLog(`⚠️ GoatBotMain error: ${err.message}`);
+  }
+}
+
+// Example async functions
+async function exampleTask() {
+  try {
+    console.log("✅ Example task running");
+  } catch (err) {
+    addLog(`⚠️ exampleTask error: ${err.message}`);
+  }
+}
+
+async function anotherTask() {
+  try {
+    console.log("✅ Another task running fine");
+  } catch (err) {
+    addLog(`⚠️ anotherTask error: ${err.message}`);
+  }
+}
+
+// Wrap GoatBotMain
+const safeGoatBot = wrapAsync(GoatBotMain);
+
+// ---------------------
+// Auto-Restart System
+// ---------------------
+function startBot() {
+  const child = spawn("node", ["-e", `"(${safeGoatBot.toString()})()"`], {
     cwd: __dirname,
     stdio: "inherit",
-    shell: true
+    shell: true,
   });
 
   child.on("close", (code) => {
-    logs.push(`[${new Date().toISOString()}] Bot exited with code ${code}`);
-    if (code == 2) {
-      log.info("Restarting Project...");
-      startProject();
-    }
+    addLog(`⚠️ Goat Bot exited with code ${code}. Restarting in 5 seconds...`);
+    setTimeout(startBot, 5000);
   });
 
   child.on("error", (err) => {
-    logs.push(`[${new Date().toISOString()}] Error: ${err.message}`);
+    addLog(`❌ Goat.js spawn error: ${err.message}`);
   });
 }
 
-startProject();
+// ---------------------
+// Global Error Handlers
+// ---------------------
+process.on("uncaughtException", (err) => addLog(`💥 Uncaught Exception: ${err.message}`));
+process.on("unhandledRejection", (reason) => addLog(`💥 Unhandled Rejection: ${reason}`));
+
+// ---------------------
+// Start Bot
+// ---------------------
+startBot();
