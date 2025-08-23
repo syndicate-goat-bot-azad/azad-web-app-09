@@ -1,83 +1,58 @@
 /**
- * Goat Bot Single File Version
- * Author: NTKhang
- * Modified by: Azad (24/7 + Auto-restart + Error-proof + Render Optimized)
+ * @author NTKhang
+ * Modified by Azad (Added keep-alive system for 24/7 uptime)
  */
 
-const { spawn } = require("child_process");
 const express = require("express");
 const axios = require("axios");
+const log = require("./logger/log.js");
+const GoatBot = require("./Goat.js"); // Assuming Goat.js exports a function to start
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ---------------------
-// Logging System
-// ---------------------
+// ----------- Fake Web Server -----------
+app.get("/", (req, res) => {
+  res.send("✅ Goat Bot is running 24/7!");
+});
+
+// (Optional) Show logs from memory
 let logs = [];
-function addLog(msg) {
-  const timestamp = `[${new Date().toISOString()}]`;
-  logs.push(`${timestamp} ${msg}`);
-  if (logs.length > 50) logs.shift(); // keep max 50 logs
-  console.log(msg);
-}
+app.get("/logs", (req, res) => {
+  res.json(logs.slice(-50));
+});
 
-// ---------------------
-// Web Server (Keep-Alive)
-// ---------------------
-app.get("/", (req, res) => res.send("✅ Goat Bot is running 24/7!"));
-app.get("/logs", (req, res) => res.json(logs));
+app.listen(PORT, () => {
+  console.log(`🌐 Web server listening on port ${PORT}`);
+});
+// ---------------------------------------
 
-app.listen(PORT, () => addLog(`🌐 Web server started on PORT: ${PORT}`));
-
-// ---------------------
-// Self-Ping (Render optimized)
-// ---------------------
+// ----------- Self-Ping (Keep Alive) -----------
 const url = `http://localhost:${PORT}`;
 setInterval(async () => {
   try {
     await axios.get(url);
-    addLog("🔄 Self-ping successful");
+    console.log("🔄 Self-ping to keep bot alive...");
   } catch (err) {
-    addLog(`⚠️ Self-ping failed: ${err.message}`);
+    console.error("⚠️ Self-ping failed:", err.message);
   }
-}, 60 * 1000); // ping every 1 minute
+}, 5 * 60 * 1000);
+// -------------------------------------------
 
-// ---------------------
-// Goat Bot Main Code
-// ---------------------
-async function startGoatBot() {
-  try {
-    addLog("🚀 Starting Goat Bot...");
-
-    // ===============================
-    // 👉 Put your Goat.js code here 👇
-    // ===============================
-
-    console.log("🐐 Goat Bot core code is running...");
-
-    // Example async loop (replace with your bot logic)
-    setInterval(() => {
-      console.log("💡 Goat Bot is still alive...");
-    }, 10000);
-
-    // ===============================
-    // 👉 End of Goat.js code
-    // ===============================
-
-  } catch (err) {
-    addLog(`❌ Error in Goat Bot: ${err.message}`);
-    setTimeout(startGoatBot, 5000); // restart after 5s
+// ----------- Start Bot with Error Handling -----------
+async function startBot() {
+  while (true) {
+    try {
+      console.log("🤖 Starting Goat Bot...");
+      await GoatBot(); // Ensure Goat.js exports an async function
+      console.log("⚠️ Goat Bot stopped unexpectedly. Restarting in 5s...");
+      await new Promise(r => setTimeout(r, 5000));
+    } catch (err) {
+      console.error("❌ Error in Goat Bot:", err.message);
+      logs.push(`[${new Date().toISOString()}] Error: ${err.message}`);
+      await new Promise(r => setTimeout(r, 5000));
+    }
   }
 }
 
-// ---------------------
-// Global Error Handlers
-// ---------------------
-process.on("uncaughtException", (err) => addLog(`💥 Uncaught Exception: ${err.message}`));
-process.on("unhandledRejection", (reason) => addLog(`💥 Unhandled Rejection: ${reason}`));
-
-// ---------------------
-// Start Bot
-// ---------------------
-startGoatBot();
+startBot();
