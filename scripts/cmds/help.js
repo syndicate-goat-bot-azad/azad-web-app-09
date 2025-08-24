@@ -1,146 +1,152 @@
-const fs = require("fs-extra");
-const axios = require("axios");
-const path = require("path");
-const { getPrefix } = global.utils;
-const { commands, aliases } = global.GoatBot;
+// Author: Azad
+
+function roleTextToString(role) {
+  switch (role) {
+    case 0: return "🟢 Everyone";
+    case 1: return "🟡 Group Admins";
+    case 2: return "🔴 Bot Admins";
+    default: return "❓ Unknown";
+  }
+}
+
+// Category emoji map
+const categoryIcons = {
+  info: "📚",
+  system: "⚙️",
+  admin: "🛡️",
+  fun: "🎮",
+  games: "🎲",
+  economy: "💰",
+  media: "🎬",
+  ai: "🤖",
+  owner: "👑",
+  misc: "✨",
+  uncategorized: "📦"
+};
 
 module.exports = {
   config: {
     name: "help",
-    aliases:["use", "cmdl"],
-    version: "1.18",
-    author: "HaSaN", 
+    aliases: ["use", "cmdl"],
+    version: "2.0",
+    author: "Azad",
     countDown: 5,
     role: 0,
-    shortDescription: {
-      en: "View command usage",
-    },
-    longDescription: {
-      en: "View command usage and list all commands or commands by category",
-    },
+    shortDescription: { en: "Stylish command usage menu" },
+    longDescription: { en: "Get command details, usage, and categories with style" },
     category: "info",
-    guide: {
-      en: "{pn} / help cmdName\n{pn} -c <categoryName>",
-    },
+    guide: { en: "{pn} / help cmdName\n{pn} -c <categoryName>" },
     priority: 1,
   },
 
-  onStart: async function ({ message, args, event, threadsData, role }) {
+  onStart: async function ({ message, args, event, role }) {
     const { threadID } = event;
-    const threadData = await threadsData.get(threadID);
-    const prefix = getPrefix(threadID);
 
-    if (args.length === 0) {
+    // fallback prefix
+    let prefix = "!";
+    try {
+      if (global.utils && typeof global.utils.getPrefix === "function") {
+        prefix = global.utils.getPrefix(threadID) || "!";
+      }
+    } catch {
+      prefix = "!";
+    }
+
+    const commands = global.GoatBot?.commands;
+    const aliases = global.GoatBot?.aliases;
+
+    if (!commands || !aliases) {
+      return await message.reply("❌ Commands are not loaded yet.");
+    }
+
+    // ----- Full List -----
+    if (!args.length) {
+      let msg = `╔══════════════════════════════════╗
+      ✨ 𝗔𝗭𝗔𝗗 𝗖𝗵𝗮𝘁 𝗕𝗼𝘁 — 𝗛𝗘𝗟𝗣 𝗠𝗘𝗡𝗨 ✨
+╚══════════════════════════════════╝\n`;
+
       const categories = {};
-      let msg = "";
-
-      msg += `╔══════════════╗\n🔹 𝑪𝑶𝑴𝑴𝑨𝑵𝑫 𝑳𝑰𝑺𝑻 🔹\n╚══════════════╝\n`;
-
-      for (const [name, value] of commands) {
-        if (value.config.role > 1 && role < value.config.role) continue;
-
-        const category = value.config.category || "Uncategorized";
-        categories[category] = categories[category] || { commands: [] };
-        categories[category].commands.push(name);
+      for (const [name, cmd] of commands) {
+        if (cmd.config.role > role) continue;
+        const cat = (cmd.config.category || "Uncategorized").toLowerCase();
+        categories[cat] = categories[cat] || [];
+        categories[cat].push(name);
       }
 
-      Object.keys(categories).forEach((category) => {
-        if (category !== "info") {
-          msg += `\n╭────────────⭓\n│『 ${category.toUpperCase()} 』`;
-
-          const names = categories[category].commands.sort();
-          names.forEach((item) => {
-            msg += `\n│𖤍 ${item}`;
-          });
-
-          msg += `\n╰────────⭓`;
-        }
+      Object.keys(categories).forEach((cat) => {
+        const icon = categoryIcons[cat] || "📦";
+        msg += `\n╔─ ${icon} ${cat.toUpperCase()} ───────────────╗\n`;
+        categories[cat].sort().forEach(c => msg += `│ 🔹 ${c}\n`);
+        msg += `╚───────────────────────────────╯\n`;
       });
 
-      const totalCommands = commands.size;
-      msg += `\n𝗖𝘂𝗿𝗿𝗲𝗻𝘁𝗹𝘆, 𝘁𝗵𝗲 𝗯𝗼𝘁 𝗵𝗮𝘀 ${totalCommands} 𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀 𝘁𝗵𝗮𝘁 𝗰𝗮𝗻 𝗯𝗲 𝘂𝘀𝗲𝗱\n`;
-      msg += `\n𝗧𝘆𝗽𝗲 ${prefix}𝗵𝗲𝗹𝗽 𝗰𝗺𝗱𝗡𝗮𝗺𝗲 𝘁𝗼 𝘃𝗶𝗲𝘄 𝘁𝗵𝗲 𝗱𝗲𝘁𝗮𝗶𝗹𝘀 𝗼𝗳 𝘁𝗵𝗮𝘁 𝗰𝗼𝗺𝗺𝗮𝗻𝗱\n`;
-      msg += `\n🫧𝑩𝑶𝑻 𝑵𝑨𝑴𝑬🫧:🎭𝘼𝙯𝙖𝙙 𝙘𝙝𝙖𝙩 𝙗𝙤𝙩⭕`;
-      msg += `\n𓀬 𝐁𝐎𝐓 𝐎𝐖𝐍𝐄𝐑 🅰🆉🅰🅳`;
-      msg += `\n 	 					`;
-      msg += `\n~𝙉𝘼𝙈𝙀:♡︎ 🅰🆉🅰🅳 ♡︎`;
-      msg += `\n~𝙁𝘽:https://www.facebook.com/profile.php?id=61578365162382`;
+      msg += `
 
-      await message.reply({
-        body: msg,
-      });
-    } else if (args[0] === "-c") {
-      if (!args[1]) {
-        await message.reply("Please specify a category name.");
-        return;
-      }
+📌 Total Commands: ${commands.size}
+💡 Use: ${prefix}help <command>
+👑 Bot Owner: 🅰🆉🅰🅳
+🔗 FB: facebook.com/profile.php?id=61578365162382
+`;
+
+      await message.reply({ body: msg });
+    }
+
+    // ----- Category List -----
+    else if (args[0] === "-c") {
+      if (!args[1]) return await message.reply("❗ Please specify a category name.");
 
       const categoryName = args[1].toLowerCase();
-      const filteredCommands = Array.from(commands.values()).filter(
-        (cmd) => cmd.config.category?.toLowerCase() === categoryName
+      const filtered = Array.from(commands.values()).filter(
+        cmd => (cmd.config.category || "").toLowerCase() === categoryName
       );
 
-      if (filteredCommands.length === 0) {
-        await message.reply(`No commands found in the category "${categoryName}".`);
-        return;
-      }
+      if (!filtered.length) return await message.reply(`❌ No commands found in "${categoryName}"`);
 
-      let msg = `╔══════════════╗\n༒︎ ${categoryName.toUpperCase()} COMMANDS ༒︎\n╚══════════════╝\n`;
+      const icon = categoryIcons[categoryName] || "📦";
 
-      filteredCommands.forEach((cmd) => {
-        msg += `\n☠︎︎ ${cmd.config.name} `;
-      });
+      let msg = `╔════════════════════════╗
+📂 ${icon} ${categoryName.toUpperCase()} COMMANDS
+╚════════════════════════╝\n`;
+
+      filtered.forEach(cmd => msg += `│ 🔹 ${cmd.config.name}\n`);
+      msg += `╚────────────────────────╯`;
 
       await message.reply(msg);
-    } else {
+    }
+
+    // ----- Command Details -----
+    else {
       const commandName = args[0].toLowerCase();
       const command = commands.get(commandName) || commands.get(aliases.get(commandName));
 
-      if (!command) {
-        await message.reply(`Command "${commandName}" not found.`);
-      } else {
-        const configCommand = command.config;
-        const roleText = roleTextToString(configCommand.role);
-        const author = configCommand.author || "Unknown";
+      if (!command) return await message.reply(`❌ Command "${commandName}" not found.`);
 
-        const longDescription = configCommand.longDescription
-          ? configCommand.longDescription.en || "No description"
-          : "No description";
+      const cfg = command.config;
+      const usage = (cfg.guide?.en || "No guide")
+        .replace(/{p}/g, prefix)
+        .replace(/{n}/g, cfg.name);
 
-        const guideBody = configCommand.guide?.en || "No guide available.";
-        const usage = guideBody.replace(/{p}/g, prefix).replace(/{n}/g, configCommand.name);
+      const msg = `╔══════════════════════════════════╗
+      🌟 Command: ${cfg.name.toUpperCase()}
+╚══════════════════════════════════╝
 
-        const response = `╭── 𝑵𝑨𝑴𝑬 ────⭓\n` +
-          `│ ${configCommand.name}\n` +
-          `├── 𝑰𝑵𝑭𝑶\n` +
-          `│ 𝐷𝑒𝑠𝑐𝑟𝑖𝑝𝑡𝑖𝑜𝑛: ${longDescription}\n` +
-          `│ 𝑂𝑡ℎ𝑒𝑟 𝑁𝑎𝑚𝑒: ${configCommand.aliases ? configCommand.aliases.join(", ") : "Do not have"}\n` +
-          `│ 𝑉𝑒𝑟𝑠𝑖𝑜𝑛: ${configCommand.version || "1.0"}\n` +
-          `│ 𝑅𝑜𝑙𝑒: ${roleText}\n` +
-          `│ 𝑇𝑖𝑚𝑒 𝑃𝑒𝑟 𝐶𝑜𝑚𝑚𝑎𝑛𝑑: ${configCommand.countDown || 1}s\n` +
-          `│ 𝐴𝑢𝑡ℎ𝑜𝑟: ${author}\n` +
-          `├── 𝑼𝑺𝑨𝑮𝑬\n` +
-          `│ ${usage}\n` +
-          `├── 𝑵𝑶𝑻𝑬𝑺\n` +
-          `│ 𝑇ℎ𝑒 𝑐𝑜𝑛𝑡𝑒𝑛𝑡 𝑖𝑛𝑠𝑖𝑑𝑒 ♡︎ 🅰🆉🅰🅳 ♡︎ 𝑐𝑎𝑛 𝑏𝑒 𝑐ℎ𝑎𝑛𝑔𝑒𝑑\n` +
-          `│ ♕︎ 𝐎𝐖𝐍𝐄𝐑 ♕︎:☠︎︎ 🅰🆉🅰🅳 ☠︎︎\n` +
-          `╰━━━━━━━❖`;
+📌 Description: ${cfg.longDescription?.en || "No description"}
+🛠 Aliases: ${cfg.aliases?.length ? cfg.aliases.join(", ") : "None"}
+⚡ Version: ${cfg.version || "1.0"}
+👤 Role: ${roleTextToString(cfg.role)}
+⏱ Cooldown: ${cfg.countDown || 1}s
+✍️ Author: ${cfg.author || "Unknown"}
 
-        await message.reply(response);
-      }
+📖 Usage:
+${usage}
+
+📝 Notes:
+♡︎ 🅰🆉🅰🅳 ♡︎ content cannot be changed
+♕︎ Owner: 🅰🆉🅰🅳 ♕
+
+🔗 FB: facebook.com/profile.php?id=61578365162382`;
+
+      await message.reply(msg);
     }
   },
 };
-
-function roleTextToString(roleText) {
-  switch (roleText) {
-    case 0:
-      return "0 (All users)";
-    case 1:
-      return "1 (Group administrators)";
-    case 2:
-      return "2 (Admin bot)";
-    default:
-      return "Unknown role";
-  }
-          }
