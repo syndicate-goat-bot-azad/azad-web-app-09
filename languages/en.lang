@@ -89,14 +89,14 @@ handlerCheckData.cantCreateThread=Groups with id '%1' cannot be written to the d
 handlerCheckData.cantCreateUser=Users with id '%1' cannot be written to the database!
 
 # bot/handler/handlerEvents.js
-handlerEvents.userBanned=You have been banned from using the bot\n» Reason: %1\n» Time: %2\n» User ID: %3
-handlerEvents.threadBanned=This group has been banned from using the bot\n» Reason: %1\n» Time: %2\n» Thread ID: %3
-handlerEvents.onlyAdminBox=This group is currently enabled only group administrators can use the bot
-handlerEvents.onlyAdminBot=❌ | Currently only bot's admin can use bot
-handlerEvents.commandNotFound=❗| 𝐶𝑜𝑚𝑚𝑎𝑛𝑑 "%1" 𝑑𝑜𝑒𝑠 𝑛𝑜𝑡 𝑒𝑥𝑖𝑠𝑡, 𝑇𝑦𝑝𝑒 %2ℎ𝑒𝑙𝑝 𝑡𝑜 𝑠𝑒𝑒 𝑎𝑙𝑙 𝑎𝑣𝑎𝑖𝑙𝑎𝑏𝑙𝑒 𝑐𝑜𝑚𝑚𝑎𝑛𝑑𝑠
-handlerEvents.commandNotFound2=❗| 𝑻𝒉𝒆 𝒄𝒐𝒎𝒎𝒂𝒏𝒅 𝒚𝒐𝒖 𝒂𝒓𝒆 𝒖𝒔𝒊𝒏𝒈 𝒅𝒐𝒆𝒔 𝒏𝒐𝒕 𝒆𝒙𝒊𝒔𝒕, 𝒕𝒚𝒑𝒆 %1𝒉𝒆𝒍𝒑 𝒕𝒐  𝒔𝒆𝒆 𝒂𝒍𝒍 𝒂𝒗𝒂𝒊𝒍𝒂𝒃𝒍𝒆 𝒄𝒐𝒎𝒎𝒂𝒏𝒅𝒔
-handlerEvents.commandSyntaxError=The command you are using is wrong syntax, please type %1help %2 to see the details of how to use this command
-handlerEvents.onlyAdmin=❌ | Only group administrators can use the command "%1"
+handlerEvents.userBanned=✦━━━━━━━━━━━━━━━━━✦\n⛔ 𝗬𝗼𝘂 𝗵𝗮𝘃𝗲 𝗯𝗲𝗲𝗻 𝗕𝗔𝗡𝗡𝗘𝗗 𝗳𝗿𝗼𝗺 𝘂𝘀𝗶𝗻𝗴 𝘁𝗵𝗲 𝗯𝗼𝘁!\n\n🔒 𝗥𝗲𝗮𝘀𝗼𝗻: %1\n🕰 𝗧𝗶𝗺𝗲: %2\n🆔 𝗨𝘀𝗲𝗿 𝗜𝗗: %3\n✦━━━━━━━━━━━━━━━━━✦
+handlerEvents.threadBanned=✦━━━━━━━━━━━━━━━━━✦\n🚫 𝗧𝗵𝗶𝘀 𝗴𝗿𝗼𝘂𝗽 𝗵𝗮𝘀 𝗯𝗲𝗲𝗻 𝗕𝗔𝗡𝗡𝗘𝗗 𝗳𝗿𝗼𝗺 𝘂𝘀𝗶𝗻𝗴 𝘁𝗵𝗲 𝗯𝗼𝘁!\n\n🔒 𝗥𝗲𝗮𝘀𝗼𝗻: %1\n🕰 𝗧𝗶𝗺𝗲: %2\n🧵 𝗧𝗵𝗿𝗲𝗮𝗱 𝗜𝗗: %3\n✦━━━━━━━━━━━━━━━━━✦
+handlerEvents.onlyAdminBox=✦━━━━━━━━━━━━━━━━━✦\n🔐 𝗢𝗻𝗹𝘆 𝗴𝗿𝗼𝘂𝗽 𝗮𝗱𝗺𝗶𝗻𝘀 𝗰𝗮𝗻 𝘂𝘀𝗲 𝘁𝗵𝗲 𝗯𝗼𝘁 𝗿𝗶𝗴𝗵𝘁 𝗻𝗼𝘄!\n✦━━━━━━━━━━━━━━━━━✦
+handlerEvents.onlyAdminBot=✦━━━━━━━━━━━━━━━━━✦\n❌ 𝗢𝗻𝗹𝘆 𝘁𝗵𝗲 𝗯𝗼𝘁'𝘀 𝗮𝗱𝗺𝗶𝗻𝘀 𝗮𝗿𝗲 𝗮𝗹𝗹𝗼𝘄𝗲𝗱 𝘁𝗼 𝘂𝘀𝗲 𝗶𝘁 𝗿𝗶𝗴𝗵𝘁 𝗻𝗼𝘄!\n✦━━━━━━━━━━━━━━━━━✦
+handlerEvents.commandNotFound=✦━━━━━━━━━━━━━━━━━✦\n📛 𝗖𝗼𝗺𝗺𝗮𝗻𝗱 "𝘀𝗮𝗶𝗱 𝗮𝘀 %1" 𝗱𝗼𝗲𝘀 𝗻𝗼𝘁 𝗲𝘅𝗶𝘀𝘁.\n💡 𝗧𝘆𝗽𝗲 %2𝗵𝗲𝗹𝗽 𝘁𝗼 𝘀𝗲𝗲 𝗮𝗹𝗹 𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲 𝗰𝗼𝗺𝗺𝗮𝗻𝗱𝘀.\n✦━━━━━━━━━━━━━━━━━✦
+handlerEvents.commandNotFound2=✦━━━━━━━━━━━━━━━━━✦\n🐢 কি হইসে তোর ? পড়াশোনা নাই তোর,যা ফোন রেখে পড়তে বস !🦂\n✦━━━━━━━━━━━━━━━━━✦
+handlerEvents.commandSyntaxError=✦━━━━━━━━━━━━━━━━━✦\n⚠️ 𝗪𝗿𝗼𝗻𝗴 𝗰𝗼𝗺𝗺𝗮𝗻𝗱 𝘀𝘆𝗻𝘁𝗮𝘅!\n🧾 𝗧𝘆𝗽𝗲 %1𝗵𝗲𝗹𝗽 %2 𝘁𝗼 𝘀𝗲𝗲 𝗵𝗼𝘄 𝘁𝗼 𝘂𝘀𝗲 𝗶𝘁 𝗽𝗿𝗼𝗽𝗲𝗿𝗹𝘆.\n✦━━━━━━━━━━━━━━━━━✦
+handlerEvents.onlyAdmin=✦━━━━━━━━━━━━━━━━━✦\n🔐 𝗢𝗻𝗹𝘆 𝗴𝗿𝗼𝘂𝗽 𝗮𝗱𝗺𝗶𝗻𝘀 𝗰𝗮𝗻 𝘂𝘀𝗲 𝘁𝗵𝗲 "𝗰𝗺𝗱: %1"\n✦━━━━━━━━━━━━━━━━━✦
 handlerEvents.onlyAdminToUseOnReply=❌ | Only group administrators can use the reply function of the command "%1"
 handlerEvents.onlyAdminToUseOnReaction=❌ | Only group administrators can use the reaction function of the command "%1"
 handlerEvents.onlyAdminBot2=❌ | Only bot's admin can use the command "%1"
