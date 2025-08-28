@@ -1,10 +1,6 @@
 /**
- * @author NTKhang
- *
- * ! The source code is written by NTKhang, please don't change the author's name everywhere.
- * ! Official source code: https://github.com/ntkhang03/Goat-Bot-V2
- *
- * Modified by Azad (Added keep-alive system for 24/7 uptime)
+ * Optimized Goat Bot Main Launcher
+ * Prevents memory leaks and limits restart loops
  */
 
 const { spawn } = require("child_process");
@@ -15,23 +11,21 @@ const axios = require("axios");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ----------- Fake Web Server -----------
-app.get("/", (req, res) => {
-  res.send("✅ Goat Bot is running 24/7!");
-});
+// ---------------- Fake Web Server ----------------
+app.get("/", (req, res) => res.send("✅ Goat Bot is running 24/7!"));
 
-// (Optional) Show logs from memory
+// Show last 50 logs safely
 let logs = [];
-app.get("/logs", (req, res) => {
-  res.json(logs.slice(-50)); // শেষ ৫০টা লগ দেখাবে
-});
+const MAX_LOGS = 50;
+app.get("/logs", (req, res) => res.json(logs));
 
+// Keep server listening
 app.listen(PORT, () => {
   console.log(`🌐 Web server listening on port ${PORT}`);
 });
-// ---------------------------------------
+// -------------------------------------------------
 
-// ----------- Self-Ping (Keep Alive) -----------
+// ---------------- Self-Ping ---------------------
 const url = `http://localhost:${PORT}`;
 setInterval(async () => {
   try {
@@ -40,27 +34,43 @@ setInterval(async () => {
   } catch (err) {
     console.error("⚠️ Self-ping failed:", err.message);
   }
-}, 5 * 60 * 1000); // প্রতি 5 মিনিটে নিজেকে পিং করবে
-// -----------------------------------------------
+}, 5 * 60 * 1000); // প্রতি 5 মিনিটে ping
+// -------------------------------------------------
+
+// ---------------- Child Process Launcher ----------------
+let restartCount = 0;
+const MAX_RESTARTS = 5; // একবারে max restart
+
+function addLog(message) {
+  const timestamp = `[${new Date().toISOString()}] ${message}`;
+  logs.push(timestamp);
+  if (logs.length > MAX_LOGS) logs.shift(); // শুধু শেষ ৫০টা লগ রাখবে
+  console.log(timestamp);
+}
 
 function startProject() {
+  if (restartCount >= MAX_RESTARTS) {
+    addLog("⚠️ Max restarts reached. Bot will not restart automatically.");
+    return;
+  }
+
+  restartCount++;
   const child = spawn("node", ["Goat.js"], {
     cwd: __dirname,
     stdio: "inherit",
-    shell: true
+    shell: true,
   });
 
   child.on("close", (code) => {
-    logs.push(`[${new Date().toISOString()}] Bot exited with code ${code}`);
-    if (code == 2) {
-      log.info("Restarting Project...");
+    addLog(`Bot exited with code ${code}`);
+    if (code === 2) {
+      addLog("Restarting Project...");
       startProject();
     }
   });
 
-  child.on("error", (err) => {
-    logs.push(`[${new Date().toISOString()}] Error: ${err.message}`);
-  });
+  child.on("error", (err) => addLog(`Error: ${err.message}`));
 }
 
+// Launch bot
 startProject();
